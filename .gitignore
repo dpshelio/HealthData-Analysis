@@ -1,5 +1,6 @@
-# ignore text files b/c they're probably data in this case
+# ignore text and bak files b/c they're probably data in this case
 *.txt
+*.bak
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
