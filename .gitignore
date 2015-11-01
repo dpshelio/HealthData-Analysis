@@ -1,3 +1,6 @@
+# ignore text files b/c they're probably data in this case
+*.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
