@@ -34,19 +34,30 @@ parser.add_argument("-e", "--end", help="end date/time in the format YYYY-MM-DD.
 args = parser.parse_args()
 
 bandDataFile = args.filename
-
+        
 # For the few oddball cases where there are missing key/pairs
 class chkDict(dict):
     def __missing__(self, key):
         return 0
         
+newDataFile = "Formatted_" + bandDataFile
+f = open(bandDataFile)
+contents = f.read()
+f.close()
+contents = contents.replace('\n','')
+contents = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}[\r\n]*\{\"[a-z]*\":\[',r',',contents.rstrip())
+f = open(newDataFile, 'w')
+f.write(contents)
+f.close()
+
 # Remove the "nextPage"s so JSON reading doesn't break; save backup file of original
-for line in fileinput.input(bandDataFile, inplace=1, backup='.bak'):
-    line = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}\{\"[a-z]*\":\[',r',', line.rstrip())
-    print(line)
-   
+#for line in fileinput.input(bandDataFile, inplace=1, backup='.bak'):
+#    line = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}\{\"[a-z]*\":\[',r',', line.rstrip())
+#    print(line)
+
+
 # Load our data!
-with open(bandDataFile) as data_file:
+with open(newDataFile) as data_file:
     data=json.load(data_file, object_pairs_hook=chkDict)
     
 # Arrays for data that you tend to plot
@@ -100,4 +111,3 @@ ax3.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y %H:%M'))
 fig.autofmt_xdate()               # angle the dates for easier reading
 sea.axlabel('Date','Heart Rate')
 fig.suptitle('MS Band Hourly Summary',fontsize=16)
-
