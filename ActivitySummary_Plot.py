@@ -28,43 +28,27 @@ bandDataFile = "GetActBasic.txt"
 class chkDict(dict):
     def __missing__(self, key):
         return 0
-        
-newDataFile = "Formatted_" + bandDataFile
-f = open(bandDataFile)
-contents = f.read()
-f.close()
-contents = contents.replace('\n','')
-#contents = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}[\r\n]*\{\"[a-zA-Z]*\":\[',r',',contents.rstrip())
-contents = re.sub(r',\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}\{',r',',contents.rstrip())
-pprint("subbed nextpage")
+
+# Clean data for JSON (remove newlines and nextpages)
+with open(bandDataFile) as inputfile:
+    rawData = ' '.join([line.strip() for line in inputfile])
+    rawData = re.sub(r',\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\} \{',r',',rawData.rstrip())
+    
 countFixRun = it.count()
 countFixBike =  it.count()
 countFixSleep = it.count()
 countFixGolf = it.count()
 countFixGWo = it.count()
 countFixFWo = it.count()
-#print re.sub(r"</?\w+>", lambda x: '{{{}}}'.format(next(cnt)), text)
-contents = re.sub(r'bikeActivities', lambda x: 'bikeActivities{{{}}}'.format(next(countFixBike)),contents)
-contents = re.sub(r'runActivities', lambda x: 'runActivities{{{}}}'.format(next(countFixRun)),contents)
-contents = re.sub(r'sleepActivities', lambda x: 'sleepActivities{{{}}}'.format(next(countFixSleep)),contents)
-contents = re.sub(r'golfActivities', lambda x: 'golfActivities{{{}}}'.format(next(countFixGolf)),contents)
-contents = re.sub(r'guidedWorkoutActivities', lambda x: 'guidedWorkoutActivities{{{}}}'.format(next(countFixGWo)),contents)
-contents = re.sub(r'freePlayActivities', lambda x: 'freePlayActivities{{{}}}'.format(next(countFixFWo)),contents)
-pprint("added counts")
+rawData = re.sub(r'bikeActivities', lambda x: 'bikeActivities{{{}}}'.format(next(countFixBike)),rawData)
+rawData = re.sub(r'runActivities', lambda x: 'runActivities{{{}}}'.format(next(countFixRun)),rawData)
+rawData = re.sub(r'sleepActivities', lambda x: 'sleepActivities{{{}}}'.format(next(countFixSleep)),rawData)
+rawData = re.sub(r'golfActivities', lambda x: 'golfActivities{{{}}}'.format(next(countFixGolf)),rawData)
+rawData = re.sub(r'guidedWorkoutActivities', lambda x: 'guidedWorkoutActivities{{{}}}'.format(next(countFixGWo)),rawData)
+rawData = re.sub(r'freePlayActivities', lambda x: 'freePlayActivities{{{}}}'.format(next(countFixFWo)),rawData)
 
-f = open(newDataFile, 'w')
-f.write(contents)
-f.close()
-pprint("closed file")
-       
-# Remove the "nextPage"s so JSON reading doesn't break; save backup file of original
-#for line in fileinput.input(bandDataFile, inplace=1, backup='.bak'):
-#    line = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}\{\"[a-z]*\":\[',r',', line.rstrip())
-#    print(line)
-   
 # Load our data!
-with open(newDataFile) as data_file:
-    data=json.load(data_file, object_pairs_hook=chkDict)
+data=json.loads(rawData, object_pairs_hook=chkDict)
 
 # Arrays for data that you tend to plot
 activityDateB = []
@@ -75,17 +59,19 @@ peakHeartRateB = []
 zoneHeartRateB = []
 totalDistanceB = []
 actDurationB = []
+#print('bikeActivities{'+str(0)+'}')
 
 # Pulling out relevant data from the JSON array 
-for i in range(0, len(data['bikeActivities'])):
-    activityDateB.append(re.sub('T.*','',data['bikeActivities'][i]['startTime']))
-    caloriesBurnedB.append(data['bikeActivities'][i]['caloriesBurnedSummary']['totalCalories'])
-    totalDistanceB.append(data['bikeActivities'][i]['distanceSummary']['totalDistance'])
-    actDurationB.append(data['bikeActivities'][i]['duration'])
-    avgHeartRateB.append(data['bikeActivities'][i]['heartRateSummary']['averageHeartRate'])
-    lowHeartRateB.append(data['bikeActivities'][i]['heartRateSummary']['lowestHeartRate'])
-    peakHeartRateB.append(data['bikeActivities'][i]['heartRateSummary']['peakHeartRate'])
-    zoneHeartRateB.append(data['bikeActivities'][i]['performanceSummary']['heartRateZones'])
+for i1 in range(0,next(countFixBike)):
+    for i in range(0, len(data['bikeActivities{'+str(i1)+'}'])):
+        activityDateB.append(re.sub('T.*','',data['bikeActivities{'+str(i1)+'}'][i]['startTime']))
+        caloriesBurnedB.append(data['bikeActivities{'+str(i1)+'}'][i]['caloriesBurnedSummary']['totalCalories'])
+        totalDistanceB.append(data['bikeActivities{'+str(i1)+'}'][i]['distanceSummary']['totalDistance'])
+        actDurationB.append(data['bikeActivities{'+str(i1)+'}'][i]['duration'])
+        avgHeartRateB.append(data['bikeActivities{'+str(i1)+'}'][i]['heartRateSummary']['averageHeartRate'])
+        lowHeartRateB.append(data['bikeActivities{'+str(i1)+'}'][i]['heartRateSummary']['lowestHeartRate'])
+        peakHeartRateB.append(data['bikeActivities{'+str(i1)+'}'][i]['heartRateSummary']['peakHeartRate'])
+        zoneHeartRateB.append(data['bikeActivities{'+str(i1)+'}'][i]['performanceSummary']['heartRateZones'])
 
 xB = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateB]
 
@@ -127,16 +113,16 @@ zoneHeartRateWG = []
 actDurationWG = []
 workoutIDWG = []
 
-
-for j in range(0, len(data['guidedWorkoutActivities'])):
-    activityDateWG.append(re.sub('T.*','',data['guidedWorkoutActivities'][j]['startTime']))
-    caloriesBurnedWG.append(data['guidedWorkoutActivities'][j]['caloriesBurnedSummary']['totalCalories'])
-    actDurationWG.append((isodate.parse_duration(data['guidedWorkoutActivities'][j]['duration'])).total_seconds())
-    avgHeartRateWG.append(data['guidedWorkoutActivities'][j]['heartRateSummary']['averageHeartRate'])
-    lowHeartRateWG.append(data['guidedWorkoutActivities'][j]['heartRateSummary']['lowestHeartRate'])
-    peakHeartRateWG.append(data['guidedWorkoutActivities'][j]['heartRateSummary']['peakHeartRate'])
-    zoneHeartRateWG.append(data['guidedWorkoutActivities'][j]['performanceSummary']['heartRateZones'])
-    workoutIDWG.append(data['guidedWorkoutActivities'][j]['workoutPlanId'])
+for j1 in range(0,next(countFixGWo)):
+    for j in range(0, len(data['guidedWorkoutActivities{'+str(j1)+'}'])):
+        activityDateWG.append(re.sub('T.*','',data['guidedWorkoutActivities{'+str(j1)+'}'][j]['startTime']))
+        caloriesBurnedWG.append(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['caloriesBurnedSummary']['totalCalories'])
+        actDurationWG.append((isodate.parse_duration(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['duration'])).total_seconds())
+        avgHeartRateWG.append(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['heartRateSummary']['averageHeartRate'])
+        lowHeartRateWG.append(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['heartRateSummary']['lowestHeartRate'])
+        peakHeartRateWG.append(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['heartRateSummary']['peakHeartRate'])
+        zoneHeartRateWG.append(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['performanceSummary']['heartRateZones'])
+        workoutIDWG.append(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['workoutPlanId'])
 
 xWG = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateWG]
 
@@ -179,16 +165,17 @@ totalDistanceR = []
 actDurationR = []
 runningPaceR = []
 
-for k in range(0, len(data['runActivities'])):
-    activityDateR.append(re.sub('T.*','',data['runActivities'][k]['startTime']))
-    caloriesBurnedR.append(data['runActivities'][k]['caloriesBurnedSummary']['totalCalories'])
-    totalDistanceR.append(data['runActivities'][k]['distanceSummary']['totalDistance'])
-    actDurationR.append((isodate.parse_duration(data['runActivities'][k]['duration'])).total_seconds())
-    avgHeartRateR.append(data['runActivities'][k]['heartRateSummary']['averageHeartRate'])
-    lowHeartRateR.append(data['runActivities'][k]['heartRateSummary']['lowestHeartRate'])
-    peakHeartRateR.append(data['runActivities'][k]['heartRateSummary']['peakHeartRate'])
-    zoneHeartRateR.append(data['runActivities'][k]['performanceSummary']['heartRateZones'])
-    runningPaceR.append(data['runActivities'][k]['distanceSummary']['pace'])
+for k1 in range(0,next(countFixRun)):
+    for k in range(0, len(data['runActivities{'+str(k1)+'}'])):
+        activityDateR.append(re.sub('T.*','',data['runActivities{'+str(k1)+'}'][k]['startTime']))
+        caloriesBurnedR.append(data['runActivities{'+str(k1)+'}'][k]['caloriesBurnedSummary']['totalCalories'])
+        totalDistanceR.append(data['runActivities{'+str(k1)+'}'][k]['distanceSummary']['totalDistance'])
+        actDurationR.append((isodate.parse_duration(data['runActivities{'+str(k1)+'}'][k]['duration'])).total_seconds())
+        avgHeartRateR.append(data['runActivities{'+str(k1)+'}'][k]['heartRateSummary']['averageHeartRate'])
+        lowHeartRateR.append(data['runActivities{'+str(k1)+'}'][k]['heartRateSummary']['lowestHeartRate'])
+        peakHeartRateR.append(data['runActivities{'+str(k1)+'}'][k]['heartRateSummary']['peakHeartRate'])
+        zoneHeartRateR.append(data['runActivities{'+str(k1)+'}'][k]['performanceSummary']['heartRateZones'])
+        runningPaceR.append(data['runActivities{'+str(k1)+'}'][k]['distanceSummary']['pace'])
 
 xR = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateR]
 
@@ -222,14 +209,15 @@ peakHeartRateFW = []
 zoneHeartRateFW = []
 actDurationFW = []
 
-for n in range(0, len(data['freePlayActivities'])):
-    activityDateFW.append(re.sub('T.*','',data['freePlayActivities'][n]['startTime']))
-    caloriesBurnedFW.append(data['freePlayActivities'][n]['caloriesBurnedSummary']['totalCalories'])
-    actDurationFW.append((isodate.parse_duration(data['freePlayActivities'][n]['duration'])).total_seconds())
-    avgHeartRateFW.append(data['freePlayActivities'][n]['heartRateSummary']['averageHeartRate'])
-    lowHeartRateFW.append(data['freePlayActivities'][n]['heartRateSummary']['lowestHeartRate'])
-    peakHeartRateFW.append(data['freePlayActivities'][n]['heartRateSummary']['peakHeartRate'])
-    zoneHeartRateFW.append(data['freePlayActivities'][n]['performanceSummary']['heartRateZones'])
+for n1 in range(0,next(countFixFWo)):
+    for n in range(0, len(data['freePlayActivities{'+str(n1)+'}'])):
+        activityDateFW.append(re.sub('T.*','',data['freePlayActivities{'+str(n1)+'}'][n]['startTime']))
+        caloriesBurnedFW.append(data['freePlayActivities{'+str(n1)+'}'][n]['caloriesBurnedSummary']['totalCalories'])
+        actDurationFW.append((isodate.parse_duration(data['freePlayActivities{'+str(n1)+'}'][n]['duration'])).total_seconds())
+        avgHeartRateFW.append(data['freePlayActivities{'+str(n1)+'}'][n]['heartRateSummary']['averageHeartRate'])
+        lowHeartRateFW.append(data['freePlayActivities{'+str(n1)+'}'][n]['heartRateSummary']['lowestHeartRate'])
+        peakHeartRateFW.append(data['freePlayActivities{'+str(n1)+'}'][n]['heartRateSummary']['peakHeartRate'])
+        zoneHeartRateFW.append(data['freePlayActivities{'+str(n1)+'}'][n]['performanceSummary']['heartRateZones'])
 
 xFW = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateFW]
 
@@ -253,16 +241,17 @@ fig4.autofmt_xdate()               # angle the dates for easier reading
 sea.axlabel('Date','Heart Rate')
 fig4.suptitle('MS Band Free Workout Summary',fontsize=16)    
     
-
 '''
-if args.activity == "golf":
-    golfParOrBetter = []
-    for p in range(0, len(data['golfActivities'])):
-        activityDate.append(re.sub('T.*','',data['golfActivities'][i]['startTime']))
-        caloriesBurned.append(data['golfActivities'][i]['caloriesBurnedSummary']['totalCalories'])
-        actDuration.append(data['golfActivities'][i]['duration'])
-        totalDistance.append(data['golfActivities'][i]['totalDistanceWalked'])
-        golfParOrBetter.append(data['golfActivities'][i]['parOrBetterCount'])
+# I don't have any golf activities.. 
+
+golfParOrBetter = []
+for p1 in range(0,next(countFixGolf)):
+    for p in range(0, len(data['golfActivities{'+str(p1)+'}'])):
+        activityDate.append(re.sub('T.*','',data['golfActivities{'+str(p1)+'}'][i]['startTime']))
+        caloriesBurned.append(data['golfActivities{'+str(p1)+'}'][i]['caloriesBurnedSummary']['totalCalories'])
+        actDuration.append(data['golfActivities{'+str(p1)+'}'][i]['duration'])
+        totalDistance.append(data['golfActivities{'+str(p1)+'}'][i]['totalDistanceWalked'])
+        golfParOrBetter.append(data['golfActivities{'+str(p1)+'}'][i]['parOrBetterCount'])
 '''
 
 activityDateS = []
@@ -281,22 +270,23 @@ awakeDuration = []
 sleepDuration = []
 fallAsleepDuration = []
 
-for m in range(0, len(data['sleepActivities'])):
-    activityDateS.append(re.sub('T.*','',data['sleepActivities'][m]['startTime']))
-    caloriesBurnedS.append(data['sleepActivities'][m]['caloriesBurnedSummary']['totalCalories'])
-    sleepDuration.append(data['sleepActivities'][m]['sleepDuration'])
-    actDurationS.append((isodate.parse_duration(data['sleepActivities'][m]['duration'])).total_seconds())
-    avgHeartRateS.append(data['sleepActivities'][m]['heartRateSummary']['averageHeartRate'])
-    lowHeartRateS.append(data['sleepActivities'][m]['heartRateSummary']['lowestHeartRate'])
-    peakHeartRateS.append(data['sleepActivities'][m]['heartRateSummary']['peakHeartRate'])
-    sleepNumWakeup.append(data['sleepActivities'][m]['numberOfWakeups'])
-    fallAsleepTime.append(data['sleepActivities'][m]['fallAsleepTime'])
-    wakeupTime.append(data['sleepActivities'][m]['wakeupTime'])
-    sleepEfficiency.append(data['sleepActivities'][m]['sleepEfficiencyPercentage'])
-    restfulSleep.append(data['sleepActivities'][m]['totalRestfulSLeepDuration'])
-    restlessSleep.append(data['sleepActivities'][m]['totalRestlessSleepDuration'])
-    awakeDuration.append(data['sleepActivities'][m]['awakeDuration'])
-    fallAsleepDuration.append(data['sleepActivities'][m]['fallAsleepDuration'])
+for m1 in range(0,next(countFixSleep)):
+    for m in range(0, len(data['sleepActivities{'+str(m1)+'}'])):
+        activityDateS.append(re.sub('T.*','',data['sleepActivities{'+str(m1)+'}'][m]['startTime']))
+        caloriesBurnedS.append(data['sleepActivities{'+str(m1)+'}'][m]['caloriesBurnedSummary']['totalCalories'])
+        sleepDuration.append(data['sleepActivities{'+str(m1)+'}'][m]['sleepDuration'])
+        actDurationS.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['duration'])).total_seconds())
+        avgHeartRateS.append(data['sleepActivities{'+str(m1)+'}'][m]['heartRateSummary']['averageHeartRate'])
+        lowHeartRateS.append(data['sleepActivities{'+str(m1)+'}'][m]['heartRateSummary']['lowestHeartRate'])
+        peakHeartRateS.append(data['sleepActivities{'+str(m1)+'}'][m]['heartRateSummary']['peakHeartRate'])
+        sleepNumWakeup.append(data['sleepActivities{'+str(m1)+'}'][m]['numberOfWakeups'])
+        fallAsleepTime.append(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepTime'])
+        wakeupTime.append(data['sleepActivities{'+str(m1)+'}'][m]['wakeupTime'])
+        sleepEfficiency.append(data['sleepActivities{'+str(m1)+'}'][m]['sleepEfficiencyPercentage'])
+        restfulSleep.append(data['sleepActivities{'+str(m1)+'}'][m]['totalRestfulSLeepDuration'])
+        restlessSleep.append(data['sleepActivities{'+str(m1)+'}'][m]['totalRestlessSleepDuration'])
+        awakeDuration.append(data['sleepActivities{'+str(m1)+'}'][m]['awakeDuration'])
+        fallAsleepDuration.append(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepDuration'])
 
 xS = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateS]
 
