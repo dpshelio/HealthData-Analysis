@@ -19,8 +19,8 @@ DailySummary_Plot.py DailySummary.txt
 """
 
 import json
-from pprint import pprint
-import fileinput
+#from pprint import pprint
+#import fileinput
 import re
 import matplotlib.pyplot as plt
 import seaborn as sea
@@ -40,24 +40,32 @@ class chkDict(dict):
     def __missing__(self, key):
         return 0
  
-newDataFile = "Formatted_" + bandDataFile
-f = open(bandDataFile)
-contents = f.read()
-f.close()
-contents = contents.replace('\n','')
-contents = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}[\r\n]*\{\"[a-z]*\":\[',r',',contents.rstrip())
-f = open(newDataFile, 'w')
-f.write(contents)
-f.close()
+with open(bandDataFile) as inputfile:
+    rawData = ' '.join([line.strip() for line in inputfile])
+    rawData = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\} \{\"[a-z]*\":\[',r',',rawData.rstrip())
+    
+# Load our data!
+data=json.loads(rawData, object_pairs_hook=chkDict)
+    
+#newDataFile = "Formatted_" + bandDataFile
+#f = open(bandDataFile)
+#contents = f.read()
+#f.close()
+#contents = contents.replace('\n','')
+#contents = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}[\r\n]*\{\"[a-z]*\":\[',r',',contents.rstrip())
+#f = open(newDataFile, 'w')
+#f.write(contents)
+#f.close()
+
+#print("data loaded.")
        
 # Remove the "nextPage"s so JSON reading doesn't break; save backup file of original
 #for line in fileinput.input(bandDataFile, inplace=1, backup='.bak'):
 #    line = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}\{\"[a-z]*\":\[',r',', line.rstrip())
 #    print(line)
    
-# Load our data!
-with open(newDataFile) as data_file:
-    data=json.load(data_file, object_pairs_hook=chkDict)
+#with open(newDataFile) as data_file:
+#    data=json.load(data_file, object_pairs_hook=chkDict)
     
 # Arrays for data that you tend to plot
 caloriesBurned = []

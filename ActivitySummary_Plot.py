@@ -15,6 +15,7 @@ import datetime as dt
 import matplotlib.dates as dates
 import argparse
 import isodate
+import itertools as it
 
 parser = argparse.ArgumentParser()
 #parser.add_argument("filename", help="filename which contains Microsoft Band Health data in JSON format")
@@ -33,10 +34,28 @@ f = open(bandDataFile)
 contents = f.read()
 f.close()
 contents = contents.replace('\n','')
-contents = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}[\r\n]*\{\"[a-zA-Z]*\":\[',r',',contents.rstrip())
+#contents = re.sub(r'\],\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}[\r\n]*\{\"[a-zA-Z]*\":\[',r',',contents.rstrip())
+contents = re.sub(r',\"nextPage\":\"https:.+?(?=\")\",\"itemCount\":[0-9]*\}\{',r',',contents.rstrip())
+pprint("subbed nextpage")
+countFixRun = it.count()
+countFixBike =  it.count()
+countFixSleep = it.count()
+countFixGolf = it.count()
+countFixGWo = it.count()
+countFixFWo = it.count()
+#print re.sub(r"</?\w+>", lambda x: '{{{}}}'.format(next(cnt)), text)
+contents = re.sub(r'bikeActivities', lambda x: 'bikeActivities{{{}}}'.format(next(countFixBike)),contents)
+contents = re.sub(r'runActivities', lambda x: 'runActivities{{{}}}'.format(next(countFixRun)),contents)
+contents = re.sub(r'sleepActivities', lambda x: 'sleepActivities{{{}}}'.format(next(countFixSleep)),contents)
+contents = re.sub(r'golfActivities', lambda x: 'golfActivities{{{}}}'.format(next(countFixGolf)),contents)
+contents = re.sub(r'guidedWorkoutActivities', lambda x: 'guidedWorkoutActivities{{{}}}'.format(next(countFixGWo)),contents)
+contents = re.sub(r'freePlayActivities', lambda x: 'freePlayActivities{{{}}}'.format(next(countFixFWo)),contents)
+pprint("added counts")
+
 f = open(newDataFile, 'w')
 f.write(contents)
 f.close()
+pprint("closed file")
        
 # Remove the "nextPage"s so JSON reading doesn't break; save backup file of original
 #for line in fileinput.input(bandDataFile, inplace=1, backup='.bak'):
@@ -108,6 +127,7 @@ zoneHeartRateWG = []
 actDurationWG = []
 workoutIDWG = []
 
+
 for j in range(0, len(data['guidedWorkoutActivities'])):
     activityDateWG.append(re.sub('T.*','',data['guidedWorkoutActivities'][j]['startTime']))
     caloriesBurnedWG.append(data['guidedWorkoutActivities'][j]['caloriesBurnedSummary']['totalCalories'])
@@ -171,6 +191,8 @@ for k in range(0, len(data['runActivities'])):
     runningPaceR.append(data['runActivities'][k]['distanceSummary']['pace'])
 
 xR = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateR]
+
+pprint(k)
 
 lastIndexR = len(activityDateR)  
 firstIndexR = 0
