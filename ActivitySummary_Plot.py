@@ -23,7 +23,7 @@ args = parser.parse_args()
 #bandDataFile = args.filename
 bandDataFile = "GetActBasic.txt"
 
-# For the few oddball cases where there are missing key/pairs
+# For the few oddball cases where there are missing key/pairs, fill in with properly formatted 0s
 class chkDict(dict):
     def __missing__(self, key):
         match = re.search(r'uration', key)
@@ -56,8 +56,10 @@ rawData = re.sub(r'freePlayActivities', lambda x: 'freePlayActivities{{{}}}'.for
 # Load our data!
 data=json.loads(rawData, object_pairs_hook=chkDict)
 
-'''
-# Arrays for data that you tend to plot
+
+# -------------------------------------------------
+# BICYCLING ACTIVITY DATA
+# -------------------------------------------------
 activityDateB = []
 caloriesBurnedB = []
 avgHeartRateB = []
@@ -66,7 +68,6 @@ peakHeartRateB = []
 zoneHeartRateB = []
 totalDistanceB = []
 actDurationB = []
-#print('bikeActivities{'+str(0)+'}')
 
 # Pulling out relevant data from the JSON array 
 for i1 in range(0,next(countFixBike)):
@@ -74,7 +75,7 @@ for i1 in range(0,next(countFixBike)):
         activityDateB.append(re.sub('T.*','',data['bikeActivities{'+str(i1)+'}'][i]['startTime']))
         caloriesBurnedB.append(data['bikeActivities{'+str(i1)+'}'][i]['caloriesBurnedSummary']['totalCalories'])
         totalDistanceB.append(data['bikeActivities{'+str(i1)+'}'][i]['distanceSummary']['totalDistance'])
-        actDurationB.append(data['bikeActivities{'+str(i1)+'}'][i]['duration'])
+        actDurationB.append((isodate.parse_duration(data['bikeActivities{'+str(i1)+'}'][i]['duration'])).total_seconds())
         avgHeartRateB.append(data['bikeActivities{'+str(i1)+'}'][i]['heartRateSummary']['averageHeartRate'])
         lowHeartRateB.append(data['bikeActivities{'+str(i1)+'}'][i]['heartRateSummary']['lowestHeartRate'])
         peakHeartRateB.append(data['bikeActivities{'+str(i1)+'}'][i]['heartRateSummary']['peakHeartRate'])
@@ -93,24 +94,37 @@ lastIndexB = len(activityDateB)
 #    firstIndex = dateRange.index(endTime)
 #else:
 firstIndexB = 0
+
+paletteB = it.cycle(sea.color_palette())
     
 fig = plt.figure()
+fig.suptitle('MS Band Bike Summary',fontsize=16)
 sea.set_style('darkgrid')
-ax1 = fig.add_subplot(311)
-ax1.plot_date(xB[firstIndexB:lastIndexB],caloriesBurnedB[firstIndexB:lastIndexB],'r.')    # solid red line
+
+ax1 = fig.add_subplot(221)              # 2 rows, 2 columns, top left
+ax1.plot_date(xB[firstIndexB:lastIndexB],actDurationB[firstIndexB:lastIndexB],color=next(paletteB))    
+sea.axlabel('','Activity Duration')
+
+ax2 = fig.add_subplot(222)              # 2 rows, 2 columns, top right
+ax2.plot_date(xB[firstIndexB:lastIndexB],caloriesBurnedB[firstIndexB:lastIndexB],color=next(paletteB))    
 sea.axlabel('','Calories Burned')
 
-ax2 = fig.add_subplot(312)                        # 3 rows, 1 column, plot #2
-ax2.plot_date(xB[firstIndexB:lastIndexB],totalDistanceB[firstIndexB:lastIndexB],'b.')        # solid blue line
-sea.axlabel('','Total Distance')
-
-ax3 = fig.add_subplot(313)                        # 3 rows, 1 column, plot #3
-ax3.plot_date(xB[firstIndexB:lastIndexB],avgHeartRateB[firstIndexB:lastIndexB],'g.')      # solid green line
+ax3 = fig.add_subplot(223)              # 2 rows, 2 columns, bottom left
+ax3.plot_date(xB[firstIndexB:lastIndexB],totalDistanceB[firstIndexB:lastIndexB],color=next(paletteB))
 ax3.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
+fig.autofmt_xdate()               # angle the dates for easier reading      
+sea.axlabel('Date','Total Distance')
+
+ax4 = fig.add_subplot(224)              # 2 rows, 2 columns, bottom right
+ax4.plot_date(xB[firstIndexB:lastIndexB],avgHeartRateB[firstIndexB:lastIndexB],color=next(paletteB))
+ax4.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
 fig.autofmt_xdate()               # angle the dates for easier reading
 sea.axlabel('Date','Heart Rate')
-fig.suptitle('MS Band Bike Summary',fontsize=16)
 
+
+# -------------------------------------------------
+# GUIDED WORKOUT ACTIVITY DATA
+# -------------------------------------------------
 activityDateWG = []
 caloriesBurnedWG = []
 avgHeartRateWG = []
@@ -143,25 +157,30 @@ lastIndexWG = len(activityDateWG)
 #    firstIndex = dateRange.index(endTime)
 #else:
 firstIndexWG = 0
+
+paletteWG = it.cycle(sea.color_palette())
     
 fig2 = plt.figure()
+fig2.suptitle('MS Band Guided Workout Summary',fontsize=16)
 sea.set_style('darkgrid')
-ax_wo1 = fig2.add_subplot(311)
-ax_wo1.plot_date(xWG[firstIndexWG:lastIndexWG],caloriesBurnedWG[firstIndexWG:lastIndexWG],'r.')    # solid red line
-sea.axlabel('','Calories Burned')
 
-ax_wo2 = fig2.add_subplot(312)                        # 3 rows, 1 column, plot #2
-ax_wo2.plot_date(xWG[firstIndexWG:lastIndexWG],actDurationWG[firstIndexWG:lastIndexWG],'b.')        # solid blue line
+ax_wo1 = fig2.add_subplot(311)
+ax_wo1.plot_date(xWG[firstIndexWG:lastIndexWG],actDurationWG[firstIndexWG:lastIndexWG],color=next(paletteWG))
 sea.axlabel('','Workout Duration')
 
-ax_wo3 = fig2.add_subplot(313)                        # 3 rows, 1 column, plot #3
-ax_wo3.plot_date(xWG[firstIndexWG:lastIndexWG],avgHeartRateWG[firstIndexWG:lastIndexWG],'g.')      # solid green line
+ax_wo2 = fig2.add_subplot(312)
+ax_wo2.plot_date(xWG[firstIndexWG:lastIndexWG],caloriesBurnedWG[firstIndexWG:lastIndexWG],color=next(paletteWG))
+sea.axlabel('','Calories Burned')
+
+ax_wo3 = fig2.add_subplot(313)                        
+ax_wo3.plot_date(xWG[firstIndexWG:lastIndexWG],avgHeartRateWG[firstIndexWG:lastIndexWG],color=next(paletteWG))
 ax_wo3.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
 fig2.autofmt_xdate()               # angle the dates for easier reading
 sea.axlabel('Date','Heart Rate')
-fig2.suptitle('MS Band Guided Workout Summary',fontsize=16)
 
-
+# -------------------------------------------------
+# RUNNING ACTIVITY DATA
+# -------------------------------------------------
 activityDateR = []
 caloriesBurnedR = []
 avgHeartRateR = []
@@ -186,28 +205,38 @@ for k1 in range(0,next(countFixRun)):
 
 xR = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateR]
 
-pprint(k)
-
 lastIndexR = len(activityDateR)  
 firstIndexR = 0
 
+paletteR = it.cycle(sea.color_palette())
+
 fig3 = plt.figure()
+fig3.suptitle('MS Band Run Summary',fontsize=16)
 sea.set_style('darkgrid')
-ax_r1 = fig3.add_subplot(311)
-ax_r1.plot_date(xR[firstIndexR:lastIndexR],caloriesBurnedR[firstIndexR:lastIndexR],'r.')    # solid red line
+
+ax_r1 = fig3.add_subplot(221)
+ax_r1.plot_date(xR[firstIndexR:lastIndexR],actDurationR[firstIndexR:lastIndexR],color=next(paletteR))
+sea.axlabel('','Run Duration')
+
+ax_r2 = fig3.add_subplot(222)
+ax_r2.plot_date(xR[firstIndexR:lastIndexR],caloriesBurnedR[firstIndexR:lastIndexR],color=next(paletteR))
 sea.axlabel('','Calories Burned')
 
-ax_r2 = fig3.add_subplot(312)                        # 3 rows, 1 column, plot #2
-ax_r2.plot_date(xR[firstIndexR:lastIndexR],actDurationR[firstIndexR:lastIndexR],'b.')        # solid blue line
-sea.axlabel('','Workout Duration')
-
-ax_r3 = fig3.add_subplot(313)                        # 3 rows, 1 column, plot #3
-ax_r3.plot_date(xR[firstIndexR:lastIndexR],avgHeartRateR[firstIndexR:lastIndexR],'g.')      # solid green line
+ax_r3 = fig3.add_subplot(223)
+ax_r3.plot_date(xR[firstIndexR:lastIndexR],totalDistanceR[firstIndexR:lastIndexR],color=next(paletteR))
 ax_r3.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
 fig3.autofmt_xdate()               # angle the dates for easier reading
-sea.axlabel('Date','Heart Rate')
-fig3.suptitle('MS Band Run Summary',fontsize=16)
+sea.axlabel('Date','Run Distance')
 
+ax_r4 = fig3.add_subplot(224)
+ax_r4.plot_date(xR[firstIndexR:lastIndexR],avgHeartRateR[firstIndexR:lastIndexR],color=next(paletteR))
+ax_r4.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
+fig3.autofmt_xdate()               # angle the dates for easier reading
+sea.axlabel('Date','Heart Rate')
+
+# -------------------------------------------------
+# FREE WORKOUT ACTIVITY DATA
+# -------------------------------------------------
 activityDateFW = []
 caloriesBurnedFW = []
 avgHeartRateFW = []
@@ -231,35 +260,50 @@ xFW = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateFW]
 lastIndexFW = len(activityDateFW)  
 firstIndexFW = 0
 
-fig4 = plt.figure()
-sea.set_style('darkgrid')
-ax_fw1 = fig4.add_subplot(311)
-ax_fw1.plot_date(xFW[firstIndexFW:lastIndexFW],caloriesBurnedFW[firstIndexFW:lastIndexFW],'r.')    # solid red line
-sea.axlabel('','Calories Burned')
+paletteFW = it.cycle(sea.color_palette())
 
-ax_fw2 = fig4.add_subplot(312)                        # 3 rows, 1 column, plot #2
-ax_fw2.plot_date(xFW[firstIndexFW:lastIndexFW],actDurationFW[firstIndexFW:lastIndexFW],'b.')        # solid blue line
+fig4 = plt.figure()
+fig4.suptitle('MS Band Free Workout Summary',fontsize=16)    
+sea.set_style('darkgrid')
+
+ax_fw1 = fig4.add_subplot(311)                        # 3 rows, 1 column, plot #1
+ax_fw1.plot_date(xFW[firstIndexFW:lastIndexFW],actDurationFW[firstIndexFW:lastIndexFW],color=next(paletteFW))
 sea.axlabel('','Workout Duration')
 
+ax_fw2 = fig4.add_subplot(312)
+ax_fw2.plot_date(xFW[firstIndexFW:lastIndexFW],caloriesBurnedFW[firstIndexFW:lastIndexFW],color=next(paletteFW))
+sea.axlabel('','Calories Burned')
+
 ax_fw3 = fig4.add_subplot(313)                        # 3 rows, 1 column, plot #3
-ax_fw3.plot_date(xFW[firstIndexFW:lastIndexFW],avgHeartRateFW[firstIndexFW:lastIndexFW],'g.')      # solid green line
+ax_fw3.plot_date(xFW[firstIndexFW:lastIndexFW],avgHeartRateFW[firstIndexFW:lastIndexFW],color=next(paletteFW))
 ax_fw3.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
 fig4.autofmt_xdate()               # angle the dates for easier reading
 sea.axlabel('Date','Heart Rate')
-fig4.suptitle('MS Band Free Workout Summary',fontsize=16)    
-    
-# I don't have any golf activities.. 
 
+
+'''    
+# -------------------------------------------------
+# GOLF ACTIVITY DATA
+# -------------------------------------------------
+activityDateG = []
+caloriesBurnedG = []
+actDurationG = []
+totalDistanceG = []
 golfParOrBetter = []
 for p1 in range(0,next(countFixGolf)):
     for p in range(0, len(data['golfActivities{'+str(p1)+'}'])):
-        activityDate.append(re.sub('T.*','',data['golfActivities{'+str(p1)+'}'][i]['startTime']))
-        caloriesBurned.append(data['golfActivities{'+str(p1)+'}'][i]['caloriesBurnedSummary']['totalCalories'])
-        actDuration.append(data['golfActivities{'+str(p1)+'}'][i]['duration'])
-        totalDistance.append(data['golfActivities{'+str(p1)+'}'][i]['totalDistanceWalked'])
+        activityDateG.append(re.sub('T.*','',data['golfActivities{'+str(p1)+'}'][i]['startTime']))
+        caloriesBurnedG.append(data['golfActivities{'+str(p1)+'}'][i]['caloriesBurnedSummary']['totalCalories'])
+        actDurationG.append((isodate.parse_duration(data['golfActivities{'+str(p1)+'}'][i]['duration'])).total_seconds())
+        totalDistanceG.append(data['golfActivities{'+str(p1)+'}'][i]['totalDistanceWalked'])
         golfParOrBetter.append(data['golfActivities{'+str(p1)+'}'][i]['parOrBetterCount'])
+
+# Sorry.. I have no golf activities, but creating a plot should be easy enough if you template from other activities.
 '''
 
+# -------------------------------------------------
+# SLEEP ACTIVITY DATA
+# -------------------------------------------------
 activityDateS = []
 caloriesBurnedS = []
 actDurationS = []
@@ -302,9 +346,10 @@ xS = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateS]
 lastIndexS = len(activityDateS)  
 firstIndexS = 0
 
+# SLEEP PLOT #1 (Total Duration, Time to Sleep, Sleep Duration, Restless, Restful, Awake Duration)
 palette = it.cycle(sea.color_palette())
 fig5 = plt.figure()
-#fig5.suptitle('MS Band Sleep Summary',fontsize=16)
+fig5.suptitle('MS Band Sleep Summary 1',fontsize=16)
 sea.set_style('darkgrid')
 
 ax_s1 = fig5.add_subplot(321)                       
@@ -335,10 +380,10 @@ sea.axlabel('Date','Restful Sleep')
 ax_s6.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
 fig5.autofmt_xdate()               # angle the dates for easier reading
 
-
+# SLEEP PLOT #2 (Calories, Hour Asleep, Hour Awake, HR, # Times Awake, Efficiency)
 palette2 = it.cycle(sea.color_palette())
 fig6 = plt.figure()
-#fig6.suptitle('MS Band Sleep Summary',fontsize=16)
+fig6.suptitle('MS Band Sleep Summary 2',fontsize=16)
 sea.set_style('darkgrid')
 
 ax_sx1 = fig6.add_subplot(321)
