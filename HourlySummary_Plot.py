@@ -86,6 +86,9 @@ palette = it.cycle(sea.color_palette())
 
 fig = plt.figure()
 sea.set_style('darkgrid')
+fig.suptitle('MS Band Hourly Summary',fontsize=16)
+
+
 ax1 = fig.add_subplot(311)
 ax1.plot_date(x[firstIndex:lastIndex],caloriesBurned[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')
 sea.axlabel('','Calories Burned')
@@ -101,4 +104,3 @@ ax3.plot_date(x[firstIndex:lastIndex],peakHeartRate[firstIndex:lastIndex],color=
 ax3.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y %H:%M'))
 fig.autofmt_xdate()               # angle the dates for easier reading
 sea.axlabel('Date','Heart Rate')
-#fig.suptitle('MS Band Hourly Summary',fontsize=16)

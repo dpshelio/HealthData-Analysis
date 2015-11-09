@@ -75,7 +75,7 @@ for i1 in range(0,next(countFixBike)):
         activityDateB.append(re.sub('T.*','',data['bikeActivities{'+str(i1)+'}'][i]['startTime']))
         caloriesBurnedB.append(data['bikeActivities{'+str(i1)+'}'][i]['caloriesBurnedSummary']['totalCalories'])
         totalDistanceB.append(data['bikeActivities{'+str(i1)+'}'][i]['distanceSummary']['totalDistance'])
-        actDurationB.append((isodate.parse_duration(data['bikeActivities{'+str(i1)+'}'][i]['duration'])).total_seconds())
+        actDurationB.append(((isodate.parse_duration(data['bikeActivities{'+str(i1)+'}'][i]['duration'])).total_seconds())/60/60)
         avgHeartRateB.append(data['bikeActivities{'+str(i1)+'}'][i]['heartRateSummary']['averageHeartRate'])
         lowHeartRateB.append(data['bikeActivities{'+str(i1)+'}'][i]['heartRateSummary']['lowestHeartRate'])
         peakHeartRateB.append(data['bikeActivities{'+str(i1)+'}'][i]['heartRateSummary']['peakHeartRate'])
@@ -138,7 +138,7 @@ for j1 in range(0,next(countFixGWo)):
     for j in range(0, len(data['guidedWorkoutActivities{'+str(j1)+'}'])):
         activityDateWG.append(re.sub('T.*','',data['guidedWorkoutActivities{'+str(j1)+'}'][j]['startTime']))
         caloriesBurnedWG.append(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['caloriesBurnedSummary']['totalCalories'])
-        actDurationWG.append((isodate.parse_duration(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['duration'])).total_seconds())
+        actDurationWG.append(((isodate.parse_duration(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['duration'])).total_seconds())/60)
         avgHeartRateWG.append(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['heartRateSummary']['averageHeartRate'])
         lowHeartRateWG.append(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['heartRateSummary']['lowestHeartRate'])
         peakHeartRateWG.append(data['guidedWorkoutActivities{'+str(j1)+'}'][j]['heartRateSummary']['peakHeartRate'])
@@ -196,7 +196,7 @@ for k1 in range(0,next(countFixRun)):
         activityDateR.append(re.sub('T.*','',data['runActivities{'+str(k1)+'}'][k]['startTime']))
         caloriesBurnedR.append(data['runActivities{'+str(k1)+'}'][k]['caloriesBurnedSummary']['totalCalories'])
         totalDistanceR.append(data['runActivities{'+str(k1)+'}'][k]['distanceSummary']['totalDistance'])
-        actDurationR.append((isodate.parse_duration(data['runActivities{'+str(k1)+'}'][k]['duration'])).total_seconds())
+        actDurationR.append(((isodate.parse_duration(data['runActivities{'+str(k1)+'}'][k]['duration'])).total_seconds())/60/60)
         avgHeartRateR.append(data['runActivities{'+str(k1)+'}'][k]['heartRateSummary']['averageHeartRate'])
         lowHeartRateR.append(data['runActivities{'+str(k1)+'}'][k]['heartRateSummary']['lowestHeartRate'])
         peakHeartRateR.append(data['runActivities{'+str(k1)+'}'][k]['heartRateSummary']['peakHeartRate'])
@@ -249,7 +249,7 @@ for n1 in range(0,next(countFixFWo)):
     for n in range(0, len(data['freePlayActivities{'+str(n1)+'}'])):
         activityDateFW.append(re.sub('T.*','',data['freePlayActivities{'+str(n1)+'}'][n]['startTime']))
         caloriesBurnedFW.append(data['freePlayActivities{'+str(n1)+'}'][n]['caloriesBurnedSummary']['totalCalories'])
-        actDurationFW.append((isodate.parse_duration(data['freePlayActivities{'+str(n1)+'}'][n]['duration'])).total_seconds())
+        actDurationFW.append(((isodate.parse_duration(data['freePlayActivities{'+str(n1)+'}'][n]['duration'])).total_seconds())/60)
         avgHeartRateFW.append(data['freePlayActivities{'+str(n1)+'}'][n]['heartRateSummary']['averageHeartRate'])
         lowHeartRateFW.append(data['freePlayActivities{'+str(n1)+'}'][n]['heartRateSummary']['lowestHeartRate'])
         peakHeartRateFW.append(data['freePlayActivities{'+str(n1)+'}'][n]['heartRateSummary']['peakHeartRate'])
@@ -294,7 +294,7 @@ for p1 in range(0,next(countFixGolf)):
     for p in range(0, len(data['golfActivities{'+str(p1)+'}'])):
         activityDateG.append(re.sub('T.*','',data['golfActivities{'+str(p1)+'}'][i]['startTime']))
         caloriesBurnedG.append(data['golfActivities{'+str(p1)+'}'][i]['caloriesBurnedSummary']['totalCalories'])
-        actDurationG.append((isodate.parse_duration(data['golfActivities{'+str(p1)+'}'][i]['duration'])).total_seconds())
+        actDurationG.append(((isodate.parse_duration(data['golfActivities{'+str(p1)+'}'][i]['duration'])).total_seconds())/60/60)
         totalDistanceG.append(data['golfActivities{'+str(p1)+'}'][i]['totalDistanceWalked'])
         golfParOrBetter.append(data['golfActivities{'+str(p1)+'}'][i]['parOrBetterCount'])
 
@@ -324,8 +324,8 @@ for m1 in range(0,next(countFixSleep)):
     for m in range(0, len(data['sleepActivities{'+str(m1)+'}'])):
         activityDateS.append(re.sub('T.*','',data['sleepActivities{'+str(m1)+'}'][m]['startTime']))
         caloriesBurnedS.append(data['sleepActivities{'+str(m1)+'}'][m]['caloriesBurnedSummary']['totalCalories'])
-        sleepDuration.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['sleepDuration'])).total_seconds())
-        actDurationS.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['duration'])).total_seconds())
+        sleepDuration.append(((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['sleepDuration'])).total_seconds())/60/60)
+        actDurationS.append(((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['duration'])).total_seconds())/60/60)
         avgHeartRateS.append(data['sleepActivities{'+str(m1)+'}'][m]['heartRateSummary']['averageHeartRate'])
         lowHeartRateS.append(data['sleepActivities{'+str(m1)+'}'][m]['heartRateSummary']['lowestHeartRate'])
         peakHeartRateS.append(data['sleepActivities{'+str(m1)+'}'][m]['heartRateSummary']['peakHeartRate'])
@@ -336,10 +336,10 @@ for m1 in range(0,next(countFixSleep)):
         wakeupTime.append((((int(data['sleepActivities{'+str(m1)+'}'][m]['wakeupTime'][11:13]))*60)+(int(data['sleepActivities{'+str(m1)+'}'][m]['wakeupTime'][14:16])))/60)
         #wakeupTime.append(data['sleepActivities{'+str(m1)+'}'][m]['wakeupTime'])
         sleepEfficiency.append(data['sleepActivities{'+str(m1)+'}'][m]['sleepEfficiencyPercentage'])
-        restfulSleep.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['totalRestfulSleepDuration'])).total_seconds())
-        restlessSleep.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['totalRestlessSleepDuration'])).total_seconds())
-        awakeDuration.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['awakeDuration'])).total_seconds())
-        fallAsleepDuration.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepDuration'])).total_seconds())
+        restfulSleep.append(((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['totalRestfulSleepDuration'])).total_seconds())/60/60)
+        restlessSleep.append(((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['totalRestlessSleepDuration'])).total_seconds())/60/60)
+        awakeDuration.append(((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['awakeDuration'])).total_seconds())/60/60)
+        fallAsleepDuration.append(((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepDuration'])).total_seconds())/60/60)
 
 xS = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateS]
 

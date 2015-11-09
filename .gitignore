@@ -2,6 +2,9 @@
 *.txt
 *.bak
 
+# ignore generated gpx files
+*.gpx
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

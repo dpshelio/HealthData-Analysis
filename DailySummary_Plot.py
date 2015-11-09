@@ -84,6 +84,7 @@ else:
 palette = it.cycle(sea.color_palette())
 
 fig = plt.figure()
+fig.suptitle('MS Band Daily Summary',fontsize=16)
 sea.set_style('darkgrid')
 
 ax1 = fig.add_subplot(311)                        # 3 rows, 1 column, plot @1
@@ -101,4 +102,3 @@ ax3.plot_date(x[firstIndex:lastIndex],peakHeartRate[firstIndex:lastIndex],color=
 ax3.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%y'))
 fig.autofmt_xdate()               # angle the dates for easier reading
 sea.axlabel('Date','Heart Rate')
-#fig.suptitle('MS Band Daily Summary',fontsize=16)
