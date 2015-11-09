@@ -7,7 +7,6 @@ Creates plots from Microsoft Band ACTIVITY SUMMARY data:
 """
 import json
 from pprint import pprint
-import fileinput
 import re
 import matplotlib.pyplot as plt
 import seaborn as sea
@@ -27,7 +26,14 @@ bandDataFile = "GetActBasic.txt"
 # For the few oddball cases where there are missing key/pairs
 class chkDict(dict):
     def __missing__(self, key):
-        return 0
+        match = re.search(r'uration', key)
+        matchtime = re.search(r'Time', key)
+        if match:
+            return 'PT0M0S'
+        if matchtime:
+            return '0000-00-00T00:00:00.000+00:00'
+        else:
+            return 0
 
 # Clean data for JSON (remove newlines and nextpages)
 with open(bandDataFile) as inputfile:
@@ -50,6 +56,7 @@ rawData = re.sub(r'freePlayActivities', lambda x: 'freePlayActivities{{{}}}'.for
 # Load our data!
 data=json.loads(rawData, object_pairs_hook=chkDict)
 
+'''
 # Arrays for data that you tend to plot
 activityDateB = []
 caloriesBurnedB = []
@@ -241,7 +248,6 @@ fig4.autofmt_xdate()               # angle the dates for easier reading
 sea.axlabel('Date','Heart Rate')
 fig4.suptitle('MS Band Free Workout Summary',fontsize=16)    
     
-'''
 # I don't have any golf activities.. 
 
 golfParOrBetter = []
@@ -274,38 +280,87 @@ for m1 in range(0,next(countFixSleep)):
     for m in range(0, len(data['sleepActivities{'+str(m1)+'}'])):
         activityDateS.append(re.sub('T.*','',data['sleepActivities{'+str(m1)+'}'][m]['startTime']))
         caloriesBurnedS.append(data['sleepActivities{'+str(m1)+'}'][m]['caloriesBurnedSummary']['totalCalories'])
-        sleepDuration.append(data['sleepActivities{'+str(m1)+'}'][m]['sleepDuration'])
+        sleepDuration.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['sleepDuration'])).total_seconds())
         actDurationS.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['duration'])).total_seconds())
         avgHeartRateS.append(data['sleepActivities{'+str(m1)+'}'][m]['heartRateSummary']['averageHeartRate'])
         lowHeartRateS.append(data['sleepActivities{'+str(m1)+'}'][m]['heartRateSummary']['lowestHeartRate'])
         peakHeartRateS.append(data['sleepActivities{'+str(m1)+'}'][m]['heartRateSummary']['peakHeartRate'])
         sleepNumWakeup.append(data['sleepActivities{'+str(m1)+'}'][m]['numberOfWakeups'])
-        fallAsleepTime.append(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepTime'])
-        wakeupTime.append(data['sleepActivities{'+str(m1)+'}'][m]['wakeupTime'])
+        #pprint(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepTime'])
+        fallAsleepTime.append((((int(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepTime'][11:13]))*60)+(int(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepTime'][14:16])))/60)
+        #fallAsleepTime.append(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepTime'])
+        wakeupTime.append((((int(data['sleepActivities{'+str(m1)+'}'][m]['wakeupTime'][11:13]))*60)+(int(data['sleepActivities{'+str(m1)+'}'][m]['wakeupTime'][14:16])))/60)
+        #wakeupTime.append(data['sleepActivities{'+str(m1)+'}'][m]['wakeupTime'])
         sleepEfficiency.append(data['sleepActivities{'+str(m1)+'}'][m]['sleepEfficiencyPercentage'])
-        restfulSleep.append(data['sleepActivities{'+str(m1)+'}'][m]['totalRestfulSLeepDuration'])
-        restlessSleep.append(data['sleepActivities{'+str(m1)+'}'][m]['totalRestlessSleepDuration'])
-        awakeDuration.append(data['sleepActivities{'+str(m1)+'}'][m]['awakeDuration'])
-        fallAsleepDuration.append(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepDuration'])
+        restfulSleep.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['totalRestfulSleepDuration'])).total_seconds())
+        restlessSleep.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['totalRestlessSleepDuration'])).total_seconds())
+        awakeDuration.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['awakeDuration'])).total_seconds())
+        fallAsleepDuration.append((isodate.parse_duration(data['sleepActivities{'+str(m1)+'}'][m]['fallAsleepDuration'])).total_seconds())
 
 xS = [dt.datetime.strptime(d,'%Y-%m-%d').date() for d in activityDateS]
 
 lastIndexS = len(activityDateS)  
 firstIndexS = 0
 
+palette = it.cycle(sea.color_palette())
 fig5 = plt.figure()
+#fig5.suptitle('MS Band Sleep Summary',fontsize=16)
 sea.set_style('darkgrid')
-ax_s1 = fig5.add_subplot(311)
-ax_s1.plot_date(xS[firstIndexS:lastIndexS],caloriesBurnedS[firstIndexS:lastIndexS],'r.')    # solid red line
+
+ax_s1 = fig5.add_subplot(321)                       
+ax_s1.plot_date(xS[firstIndexS:lastIndexS],actDurationS[firstIndexS:lastIndexS],color=next(palette),linestyle='-',fillstyle='none')
+sea.axlabel('','Total Duration')
+
+ax_s2 = fig5.add_subplot(322)                       
+ax_s2.plot_date(xS[firstIndexS:lastIndexS],fallAsleepDuration[firstIndexS:lastIndexS],color=next(palette),linestyle='-',fillstyle='none')
+sea.axlabel('','Time to Fall Asleep')
+
+ax_s3 = fig5.add_subplot(323)                       
+ax_s3.plot_date(xS[firstIndexS:lastIndexS],sleepDuration[firstIndexS:lastIndexS],color=next(palette),linestyle='-',fillstyle='none')
+sea.axlabel('','Sleep Duration')
+
+ax_s4 = fig5.add_subplot(324)                       
+ax_s4.plot_date(xS[firstIndexS:lastIndexS],restlessSleep[firstIndexS:lastIndexS],color=next(palette),linestyle='-',fillstyle='none')
+sea.axlabel('','Restless Sleep')
+
+ax_s5 = fig5.add_subplot(325)                       
+ax_s5.plot_date(xS[firstIndexS:lastIndexS],awakeDuration[firstIndexS:lastIndexS],color=next(palette),linestyle='-',fillstyle='none')
+sea.axlabel('Date','Awake Duration')
+ax_s5.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
+fig5.autofmt_xdate()               # angle the dates for easier reading
+
+ax_s6 = fig5.add_subplot(326)                       
+ax_s6.plot_date(xS[firstIndexS:lastIndexS],restfulSleep[firstIndexS:lastIndexS],color=next(palette),linestyle='-',fillstyle='none')
+sea.axlabel('Date','Restful Sleep')
+ax_s6.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
+fig5.autofmt_xdate()               # angle the dates for easier reading
+
+
+palette2 = it.cycle(sea.color_palette())
+fig6 = plt.figure()
+#fig6.suptitle('MS Band Sleep Summary',fontsize=16)
+sea.set_style('darkgrid')
+
+ax_sx1 = fig6.add_subplot(321)
+ax_sx1.plot_date(xS[firstIndexS:lastIndexS],caloriesBurnedS[firstIndexS:lastIndexS],color=next(palette2),linestyle='-',fillstyle='none')
 sea.axlabel('','Calories Burned')
 
-ax_s2 = fig5.add_subplot(312)                        # 3 rows, 1 column, plot #2
-ax_s2.plot_date(xS[firstIndexS:lastIndexS],actDurationS[firstIndexS:lastIndexS],'b.')        # solid blue line
-sea.axlabel('','Workout Duration')
+ax_sx2 = fig6.add_subplot(322)
+ax_sx2.plot_date(xS[firstIndexS:lastIndexS],fallAsleepTime[firstIndexS:lastIndexS],color=next(palette2),linestyle='-',fillstyle='none')
+sea.axlabel('','GMT Hour Asleep')
 
-ax_s3 = fig5.add_subplot(313)                        # 3 rows, 1 column, plot #3
-ax_s3.plot_date(xS[firstIndexS:lastIndexS],avgHeartRateS[firstIndexS:lastIndexS],'g.')      # solid green line
-ax_s3.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
-fig5.autofmt_xdate()               # angle the dates for easier reading
-sea.axlabel('Date','Heart Rate')
-fig5.suptitle('MS Band Sleep Summary',fontsize=16)
+ax_sx3 = fig6.add_subplot(323)                      
+ax_sx3.plot_date(xS[firstIndexS:lastIndexS],lowHeartRateS[firstIndexS:lastIndexS],color=next(palette2),linestyle='-',fillstyle='none')
+sea.axlabel('','L Heart Rate')
+
+ax_sx4 = fig6.add_subplot(324)
+ax_sx4.plot_date(xS[firstIndexS:lastIndexS],wakeupTime[firstIndexS:lastIndexS],color=next(palette2),linestyle='-',fillstyle='none')
+sea.axlabel('','GMT Hour Awake')
+
+ax_sx5 = fig6.add_subplot(325)
+ax_sx5.plot_date(xS[firstIndexS:lastIndexS],sleepNumWakeup[firstIndexS:lastIndexS],color=next(palette2),linestyle='-',fillstyle='none')
+sea.axlabel('Date','# of Times Awake')
+
+ax_sx6 = fig6.add_subplot(326)
+ax_sx6.plot_date(xS[firstIndexS:lastIndexS],sleepEfficiency[firstIndexS:lastIndexS],color=next(palette2),linestyle='-',fillstyle='none')
+sea.axlabel('Date','% Sleep Efficiency')

@@ -23,7 +23,9 @@ import re
 import matplotlib.pyplot as plt
 import seaborn as sea
 import datetime as dt
+import matplotlib.dates as dates
 import argparse
+import itertools as it
 
 parser = argparse.ArgumentParser()
 parser.add_argument("filename", help="filename which contains Microsoft Band Health data in JSON format")
@@ -78,16 +80,25 @@ if args.end:
     firstIndex = dateRange.index(endTime)
 else:
     firstIndex = 0
+    
+palette = it.cycle(sea.color_palette())
 
+fig = plt.figure()
 sea.set_style('darkgrid')
-plt.subplot(311)                        # 3 rows, 1 column, plot @1
-plt.plot_date(x[firstIndex:lastIndex],caloriesBurned[firstIndex:lastIndex],'r-')    # solid red line
+
+ax1 = fig.add_subplot(311)                        # 3 rows, 1 column, plot @1
+ax1.plot_date(x[firstIndex:lastIndex],caloriesBurned[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')    # solid red line
 sea.axlabel('','Calories Burned')
-plt.subplot(312)                        # 3 rows, 1 column, plot #2
-plt.plot_date(x[firstIndex:lastIndex],stepsTaken[firstIndex:lastIndex],'b-')        # solid blue line
+
+ax2 = fig.add_subplot(312)                        # 3 rows, 1 column, plot #2
+ax2.plot_date(x[firstIndex:lastIndex],stepsTaken[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')        # solid blue line
 sea.axlabel('','Steps Taken')
-plt.subplot(313)                        # 3 rows, 1 column, plot #3
-plt.plot_date(x[firstIndex:lastIndex],avgHeartRate[firstIndex:lastIndex],'g-')      # solid green line
-plt.gcf().autofmt_xdate()               # angle the dates for easier reading
+
+ax3 = fig.add_subplot(313)                        # 3 rows, 1 column, plot #3
+ax3.plot_date(x[firstIndex:lastIndex],avgHeartRate[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')      # solid green line
+ax3.plot_date(x[firstIndex:lastIndex],lowHeartRate[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')
+ax3.plot_date(x[firstIndex:lastIndex],peakHeartRate[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')
+ax3.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%y'))
+fig.autofmt_xdate()               # angle the dates for easier reading
 sea.axlabel('Date','Heart Rate')
-plt.suptitle('MS Band Daily Summary',fontsize=16)
+#fig.suptitle('MS Band Daily Summary',fontsize=16)

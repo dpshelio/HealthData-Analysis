@@ -24,6 +24,7 @@ import seaborn as sea
 import datetime as dt
 import matplotlib.dates as dates
 import argparse
+import itertools as it
 
 parser = argparse.ArgumentParser()
 parser.add_argument("filename", help="filename which contains Microsoft Band Health data in JSON format")
@@ -80,20 +81,24 @@ if args.end:
     firstIndex = dateRange.index(endTime)
 else:
     firstIndex = 0
+    
+palette = it.cycle(sea.color_palette())
 
 fig = plt.figure()
 sea.set_style('darkgrid')
 ax1 = fig.add_subplot(311)
-ax1.plot_date(x[firstIndex:lastIndex],caloriesBurned[firstIndex:lastIndex],'r-')    # solid red line
+ax1.plot_date(x[firstIndex:lastIndex],caloriesBurned[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')
 sea.axlabel('','Calories Burned')
 
 ax2 = fig.add_subplot(312)                        # 3 rows, 1 column, plot #2
-ax2.plot_date(x[firstIndex:lastIndex],stepsTaken[firstIndex:lastIndex],'b-')        # solid blue line
+ax2.plot_date(x[firstIndex:lastIndex],stepsTaken[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')
 sea.axlabel('','Steps Taken')
 
 ax3 = fig.add_subplot(313)                        # 3 rows, 1 column, plot #3
-ax3.plot_date(x[firstIndex:lastIndex],avgHeartRate[firstIndex:lastIndex],'g-')      # solid green line
+ax3.plot_date(x[firstIndex:lastIndex],avgHeartRate[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')
+ax3.plot_date(x[firstIndex:lastIndex],lowHeartRate[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')
+ax3.plot_date(x[firstIndex:lastIndex],peakHeartRate[firstIndex:lastIndex],color=next(palette),linestyle='-',fillstyle='none')
 ax3.xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y %H:%M'))
 fig.autofmt_xdate()               # angle the dates for easier reading
 sea.axlabel('Date','Heart Rate')
-fig.suptitle('MS Band Hourly Summary',fontsize=16)
+#fig.suptitle('MS Band Hourly Summary',fontsize=16)
